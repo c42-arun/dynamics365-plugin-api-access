@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29911.84
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "spf-api", "spf-api\spf-api.csproj", "{DE059A49-0BE8-4A9B-829B-82E28372AACB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DE059A49-0BE8-4A9B-829B-82E28372AACB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE059A49-0BE8-4A9B-829B-82E28372AACB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE059A49-0BE8-4A9B-829B-82E28372AACB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE059A49-0BE8-4A9B-829B-82E28372AACB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F7A99C2D-B6DD-4A43-93A0-0D7A5BA11981}
+	EndGlobalSection
+EndGlobal
