@@ -30,14 +30,18 @@ namespace spf_api.Controllers
             string totalPayments = cells["H7"].Text;
             string totalInterest = cells["H8"].Text;
 
-            Dictionary<string, string> retVal = new Dictionary<string, string>();
-            retVal.Add("TotalPayments", totalPayments);
-            retVal.Add("TotalInterest", totalInterest);
-
+            decimal.TryParse(totalPayments, out var totalPaymentsParsed);
+            decimal.TryParse(totalInterest, out var totalInterestParsed);
 
             File.Delete(calcSpreadSheet);
 
-            return Ok(retVal);
+            return Ok(new { TotalPayments = totalPaymentsParsed, TotalInterest = totalInterestParsed });
+        }
+
+        [HttpGet]
+        public IHttpActionResult Test()
+        {
+            return Ok("Call success YES!!!");
         }
     }
 }
