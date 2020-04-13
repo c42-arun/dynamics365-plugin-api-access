@@ -29,13 +29,15 @@ namespace spf_api.Controllers
 
             string totalPayments = cells["H7"].Text;
             string totalInterest = cells["H8"].Text;
+            string monthlyPayment = cells["D21"].Text;
 
             decimal.TryParse(totalPayments, out var totalPaymentsParsed);
             decimal.TryParse(totalInterest, out var totalInterestParsed);
+            decimal.TryParse(monthlyPayment, out var monthlyPaymentParsed);
 
             File.Delete(calcSpreadSheet);
 
-            return Ok(new { TotalPayments = totalPaymentsParsed, TotalInterest = totalInterestParsed });
+            return Ok(new { TotalPayments = totalPaymentsParsed, TotalInterest = totalInterestParsed, MonthlyPayment = monthlyPaymentParsed });
         }
 
         [HttpGet]

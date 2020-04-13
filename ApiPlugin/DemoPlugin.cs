@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Microsoft.Xrm.Sdk;
+using System.IO;
+using System.Runtime.Serialization.Json;
+using System.Runtime.Serialization;
 
 namespace ApiPlugin
 {
@@ -15,19 +18,21 @@ namespace ApiPlugin
             if (Depth > 1)
                 return;
 
-            string apiResponse = CallApiMethod();
+            Loan apiResponse = CallApiMethod();
 
             string currentTime = $"{DateTime.Now.ToLongTimeString()} - {apiResponse}";
 
+            string calc = $"({DateTime.Now.ToLongTimeString()}) - TotalPayments: {apiResponse.TotalPayments}; TotalInterest: {apiResponse.TotalInterest}; MonthlyPayment: {apiResponse.MonthlyPayment}";
+
             if (entity.Attributes.ContainsKey("new_comments"))
-                entity["new_comments"] = currentTime;
+                entity["new_comments"] = calc;
             else
-                entity.Attributes.Add("new_comments", currentTime);
+                entity.Attributes.Add("new_comments", calc);
 
             Service.Update(entity);
         }
 
-        private string CallApiMethod()
+        private Loan CallApiMethod()
         {
             using (HttpClient client = new HttpClient())
             {
@@ -38,8 +43,11 @@ namespace ApiPlugin
                 if (response.IsSuccessStatusCode)
                 {
                     string result = response.Content.ReadAsStringAsync().Result;
-                    return result;
+                    
+                    Loan loan = ReadToObject(result);
+                    return loan;
                 }
+
                 TracingService.Trace(response.RequestMessage.RequestUri.ToString());
                 TracingService.Trace(response.StatusCode.ToString());
                 TracingService.Trace(response.Content.ToString());
@@ -47,5 +55,26 @@ namespace ApiPlugin
                 throw new InvalidPluginExecutionException("Error accessing API");
             }
         }
+
+        private static Loan ReadToObject(string json)
+        {
+            var deserializedLoan = new Loan();
+            var ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
+            var ser = new DataContractJsonSerializer(deserializedLoan.GetType());
+            deserializedLoan = ser.ReadObject(ms) as Loan;
+            ms.Close();
+            return deserializedLoan;
+        }
+    }
+
+    [DataContract]
+    class Loan
+    {
+        [DataMember]
+        public decimal TotalPayments { get; set; }
+        [DataMember]
+        public decimal TotalInterest { get; set; }
+        [DataMember]
+        public decimal MonthlyPayment { get; set; }
     }
 }
