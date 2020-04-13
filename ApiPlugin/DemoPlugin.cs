@@ -18,27 +18,57 @@ namespace ApiPlugin
             if (Depth > 1)
                 return;
 
-            Loan apiResponse = CallApiMethod();
+            decimal loanAmount = GetAttribute<decimal>(entity, "new_loan_amount");
+            decimal interestRate = GetAttribute<decimal>(entity, "new_interest_rate");
+            int term = GetAttribute<int>(entity, "new_term");
+            
+            Loan apiResponse = CallApiMethod(loanAmount, interestRate, term);
 
-            string currentTime = $"{DateTime.Now.ToLongTimeString()} - {apiResponse}";
+            string comments = $"({DateTime.Now.ToLongTimeString()}) - TotalPayments: {apiResponse.TotalPayments}; TotalInterest: {apiResponse.TotalInterest}; MonthlyPayment: {apiResponse.MonthlyPayment}";
 
-            string calc = $"({DateTime.Now.ToLongTimeString()}) - TotalPayments: {apiResponse.TotalPayments}; TotalInterest: {apiResponse.TotalInterest}; MonthlyPayment: {apiResponse.MonthlyPayment}";
-
-            if (entity.Attributes.ContainsKey("new_comments"))
-                entity["new_comments"] = calc;
-            else
-                entity.Attributes.Add("new_comments", calc);
+            SetAttribute(entity, "new_total_payment", apiResponse.TotalPayments);
+            SetAttribute(entity, "new_total_interest", apiResponse.TotalInterest);
+            SetAttribute(entity, "new_monthly_payment", apiResponse.MonthlyPayment);
+            SetAttribute(entity, "new_comments", comments);
 
             Service.Update(entity);
         }
 
-        private Loan CallApiMethod()
+        private static void SetAttribute(Entity entity, string attributeName, decimal attributeValue)
+        {
+            if (entity.Attributes.ContainsKey(attributeName))
+                entity[attributeName] = attributeValue;
+            else
+                entity.Attributes.Add(attributeName, attributeValue);
+        }
+
+        private static void SetAttribute(Entity entity, string attributeName, string attributeValue)
+        {
+            if (entity.Attributes.ContainsKey(attributeName))
+                entity[attributeName] = attributeValue;
+            else
+                entity.Attributes.Add(attributeName, attributeValue);
+        }
+
+        private static T GetAttribute<T>(Entity entity, string attributeName) where T : struct
+        {
+            if (entity.Attributes.ContainsKey(attributeName))
+                return (T)entity[attributeName];
+            else 
+                return default(T);
+        }
+
+        private Loan CallApiMethod(decimal loanAmount, decimal interestRate, int term)
         {
             using (HttpClient client = new HttpClient())
             {
                 client.BaseAddress = new Uri("https://spfapi.azurewebsites.net/api/cashflow/");
 
-                var response = client.GetAsync("calculate?loanAmount=487500&interestRate=0.015&term=25").Result;
+                string fragment = $"calculate?loanAmount={loanAmount}&interestRate={interestRate}&term={term}";
+
+                TracingService.Trace(fragment);
+
+                var response = client.GetAsync(fragment).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
