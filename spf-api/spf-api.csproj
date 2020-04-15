@@ -102,6 +102,7 @@
     <None Include="packages.config" />
     <EmbeddedResource Include="Spreadsheets\loan-amortization-schedule.xlsx" />
     <None Include="Properties\PublishProfiles\spfapi - Web Deploy.pubxml" />
+    <EmbeddedResource Include="Spreadsheets\student-accomodation.xlsx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

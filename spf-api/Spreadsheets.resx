@@ -118,7 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="loan_amortization_schedule" type="System.Resources.ResXFileRef, System.Windows.Forms">
+  <data name="loan-amortization-schedule" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Spreadsheets\loan-amortization-schedule.xlsx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="student-accomodation" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Spreadsheets\student-accomodation.xlsx;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

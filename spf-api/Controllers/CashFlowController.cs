@@ -41,6 +41,39 @@ namespace spf_api.Controllers
         }
 
         [HttpGet]
+        public IHttpActionResult CalculateSpf(string acquisitionCosts, string loanType)
+        {
+            //return Ok(new { Message = "Call success"});
+
+            string calcSpreadSheet = new ResourcesHelper().GetSpfSpreadSheetFileName();
+
+            IWorkbookSet workbookSet = Factory.GetWorkbookSet();
+            workbookSet.Calculation = Calculation.Manual;
+            workbookSet.BackgroundCalculation = true;
+
+            IWorkbook workbook = workbookSet.Workbooks.Open(calcSpreadSheet);
+            //IWorkbook workbook = Factory.GetWorkbook(calcSpreadSheet, System.Globalization.CultureInfo.CurrentCulture);
+            IWorksheet worksheet = workbook.Worksheets["Inputs"];
+            IRange cells = worksheet.Cells;
+
+            cells["B2"].Formula = acquisitionCosts;
+            cells["E10"].Formula = loanType.ToUpper() == "I" ? "Interest Only" : "Amortising";
+
+            workbookSet.Calculate();
+
+            string iru = cells["H4"].Text;
+            string non_utilisation = cells["H5"].Text;
+            string arrangementfee = cells["H6"].Text;
+            string totalCosts = cells["H7"].Text;
+
+            decimal.TryParse(totalCosts, out var totalPaymentsParsed);
+
+            File.Delete(calcSpreadSheet);
+
+            return Ok(new { acquisitionCosts, iru, non_utilisation, arrangementfee, totalCosts });
+        }
+
+        [HttpGet]
         public IHttpActionResult Test()
         {
             return Ok("Call success YES!!!");

@@ -8,29 +8,31 @@ using Microsoft.Xrm.Sdk;
 using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Runtime.Serialization;
+using System.Web;
 
 namespace ApiPlugin
 {
-    public class DemoPlugin : PluginBase
+    public class DealPlugin : PluginBase
     {
         protected override void ExecuteOnEntity(Entity entity)
         {
-            if (entity.LogicalName != "new_trade" || Depth > 1)
+            if (entity.LogicalName != "new_deal" || Depth > 1)
                 return;
 
+            Entity preImage = GetPreImage("PreImage_Deal");
 
-
-            decimal loanAmount = GetAttribute<decimal>(entity, "new_loan_amount");
-            decimal interestRate = GetAttribute<decimal>(entity, "new_interest_rate");
-            int term = GetAttribute<int>(entity, "new_term");
+            //decimal acquisitionCosts = GetAttribute<decimal>(entity, "new_acquisition_costs");
+            decimal acquisitionCosts = entity.GetValue<decimal>(preImage, "new_acquisition_costs");
+            string loanType = entity.GetFieldValue<string>(preImage, "new_loan_type");
             
-            Loan apiResponse = CallApiMethod(loanAmount, interestRate, term);
+            Deal apiResponse = CallApiMethod(acquisitionCosts, loanType);
 
-            string comments = $"({DateTime.Now.ToLongTimeString()}) - TotalPayments: {apiResponse.TotalPayments}; TotalInterest: {apiResponse.TotalInterest}; MonthlyPayment: {apiResponse.MonthlyPayment}";
+            string comments = $"({DateTime.Now.ToLongTimeString()}) - iru: {apiResponse.iru}; non-util: {apiResponse.non_utilisation}; arr.fee: {apiResponse.arrangementfee}; totalCosts: {apiResponse.totalCosts}";
 
-            SetAttribute(entity, "new_total_payment", apiResponse.TotalPayments);
-            SetAttribute(entity, "new_total_interest", apiResponse.TotalInterest);
-            SetAttribute(entity, "new_monthly_payment", apiResponse.MonthlyPayment);
+            SetAttribute(entity, "new_iru", apiResponse.iru);
+            SetAttribute(entity, "new_non_utilisation", apiResponse.non_utilisation);
+            SetAttribute(entity, "new_arrangement_fee", apiResponse.arrangementfee);
+            SetAttribute(entity, "new_total_costs_str", apiResponse.totalCosts);
             SetAttribute(entity, "new_comments", comments);
 
             Service.Update(entity);
@@ -56,28 +58,36 @@ namespace ApiPlugin
         {
             if (entity.Attributes.ContainsKey(attributeName))
                 return (T)entity[attributeName];
-            else 
+            else
                 return default(T);
         }
 
-        private Loan CallApiMethod(decimal loanAmount, decimal interestRate, int term)
+        private Deal CallApiMethod(decimal acquisitionCosts, string loanType)
         {
             using (HttpClient client = new HttpClient())
             {
-                client.BaseAddress = new Uri("https://spfapi.azurewebsites.net/api/cashflow/");
+                var builder = new UriBuilder("https://spfapi.azurewebsites.net/api/cashflow/calculatespf");
 
-                string fragment = $"calculate?loanAmount={loanAmount}&interestRate={interestRate}&term={term}";
+                var query = HttpUtility.ParseQueryString(string.Empty);
+                query["acquisitionCosts"] = acquisitionCosts.ToString();
+                query["loanType"] = loanType;
 
-                TracingService.Trace(fragment);
+                builder.Query = query.ToString();
 
-                var response = client.GetAsync(fragment).Result;
+                builder.Query = query.ToString();
+
+                string url = builder.ToString();
+
+                TracingService.Trace(url);
+
+                var response = client.GetAsync(url).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
                     string result = response.Content.ReadAsStringAsync().Result;
                     
-                    Loan loan = ReadToObject(result);
-                    return loan;
+                    Deal deal = ReadToObject(result);
+                    return deal;
                 }
 
                 TracingService.Trace(response.RequestMessage.RequestUri.ToString());
@@ -88,25 +98,29 @@ namespace ApiPlugin
             }
         }
 
-        private static Loan ReadToObject(string json)
+        private static Deal ReadToObject(string json)
         {
-            var deserializedLoan = new Loan();
+            var deserializedLoan = new Deal();
             var ms = new MemoryStream(Encoding.UTF8.GetBytes(json));
             var ser = new DataContractJsonSerializer(deserializedLoan.GetType());
-            deserializedLoan = ser.ReadObject(ms) as Loan;
+            deserializedLoan = ser.ReadObject(ms) as Deal;
             ms.Close();
             return deserializedLoan;
         }
     }
 
     [DataContract]
-    class Loan
+    class Deal
     {
         [DataMember]
-        public decimal TotalPayments { get; set; }
+        public string acquisitionCosts { get; set; }
         [DataMember]
-        public decimal TotalInterest { get; set; }
+        public string iru { get; set; }
         [DataMember]
-        public decimal MonthlyPayment { get; set; }
+        public string non_utilisation { get; set; }
+        [DataMember]
+        public string arrangementfee { get; set; }
+        [DataMember]
+        public string totalCosts { get; set; }
     }
 }

@@ -11,13 +11,21 @@ namespace spf_api.Helpers
     {
         public string GetAmotizationSpreadSheetFileName()
         {
-            string resourceName = "loan-amortization-schedule";
+            return GetWorkingFileCopyWithPath( "loan-amortization-schedule");
+        }
 
-            Stream fileStream = GetResourceFileStream(resourceName);
+        public string GetSpfSpreadSheetFileName()
+        {
+            return GetWorkingFileCopyWithPath("student-accomodation");
+        }
+
+        private string GetWorkingFileCopyWithPath(string templateName)
+        {
+            Stream fileStream = GetResourceFileStream(templateName);
 
             if (fileStream == null) return string.Empty;
 
-            string fileNameWithPath = Path.Combine(Path.GetTempPath(), $"{resourceName}.xlsx");
+            string fileNameWithPath = Path.Combine(Path.GetTempPath(), $"{templateName}-{Guid.NewGuid()}.xlsx");
 
             if (File.Exists(fileNameWithPath)) File.Delete(fileNameWithPath);
 

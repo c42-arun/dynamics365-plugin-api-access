@@ -65,7 +65,17 @@ namespace spf_api {
         /// </summary>
         internal static byte[] loan_amortization_schedule {
             get {
-                object obj = ResourceManager.GetObject("loan_amortization_schedule", resourceCulture);
+                object obj = ResourceManager.GetObject("loan-amortization-schedule", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] student_accomodation {
+            get {
+                object obj = ResourceManager.GetObject("student-accomodation", resourceCulture);
                 return ((byte[])(obj));
             }
         }
